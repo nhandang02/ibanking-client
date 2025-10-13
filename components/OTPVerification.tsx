@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { formatCurrency, formatTimeRemaining } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { 
   Shield, 
   Mail, 
@@ -89,8 +89,9 @@ export default function OTPVerification({
         const response = await otpAPI.getInfo(paymentId);
         setOtpInfo(response.data);
         setAttemptsRemaining(response.data.attemptsRemaining);
-      } catch (err: any) {
-        onError(err.response?.data?.message || 'Không thể lấy thông tin OTP');
+      } catch (err: unknown) {
+        const anyErr = err as { response?: { data?: { message?: string } } } | undefined;
+        onError(anyErr?.response?.data?.message || 'Không thể lấy thông tin OTP');
       }
     };
 
@@ -234,7 +235,8 @@ export default function OTPVerification({
         // Clear OTP input for next attempt
         setValue('otp', '');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const anyErr = err as { response?: { data?: { message?: string } } } | undefined;
       const newRetryCount = retryCount + 1;
       setRetryCount(newRetryCount);
       setAttemptsRemaining(5 - newRetryCount);
@@ -255,7 +257,7 @@ export default function OTPVerification({
         return;
       }
       
-      setError(`Xác thực OTP thất bại. Còn lại ${5 - newRetryCount} lần thử.`);
+      setError(anyErr?.response?.data?.message || `Xác thực OTP thất bại. Còn lại ${5 - newRetryCount} lần thử.`);
       
       // Clear OTP input for next attempt
       setValue('otp', '');
@@ -288,8 +290,9 @@ export default function OTPVerification({
       const until = Date.now() + RESEND_COOLDOWN_SECONDS * 1000;
       localStorage.setItem(`otp_resend_until_${paymentId}`, until.toString());
       startResendCooldownTimer(until);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Không thể gửi lại mã OTP');
+    } catch (err: unknown) {
+      const anyErr = err as { response?: { data?: { message?: string } } } | undefined;
+      setError(anyErr?.response?.data?.message || 'Không thể gửi lại mã OTP');
     } finally {
       setIsResending(false);
     }

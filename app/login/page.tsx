@@ -53,9 +53,10 @@ export default function LoginPage() {
       await login(data);
       console.log('Login successful, AuthContext will handle redirect...');
       // AuthContext will automatically update user state and trigger redirect
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const unknownErr = err as { message?: string } | undefined;
       console.error('Login error:', err);
-      setError(err.message || 'Đăng nhập thất bại');
+      setError(unknownErr?.message || 'Đăng nhập thất bại');
     } finally {
       setIsLoading(false);
     }

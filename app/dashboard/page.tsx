@@ -23,7 +23,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { PaymentState, PaymentStep } from '@/types';
+import { PaymentState } from '@/types';
 import { OTPVerification, ProtectedRoute } from '@/components';
 
 const paymentSchema = z.object({
@@ -94,11 +94,12 @@ export default function DashboardPage() {
             tuitionInfo: response.data,
             error: undefined,
           }));
-        } catch (err: any) {
+        } catch (err: unknown) {
+          const anyErr = err as { response?: { data?: { message?: string } } } | undefined;
           setPaymentState(prev => ({
             ...prev,
             tuitionInfo: undefined,
-            error: err.response?.data?.message || 'Không tìm thấy thông tin học phí',
+            error: anyErr?.response?.data?.message || 'Không tìm thấy thông tin học phí',
           }));
         }
       } else {
@@ -148,8 +149,9 @@ export default function DashboardPage() {
       };
       setPaymentState(newState);
       localStorage.setItem('payment_state', JSON.stringify(newState));
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Tạo thanh toán thất bại');
+    } catch (err: unknown) {
+      const anyErr = err as { response?: { data?: { message?: string } } } | undefined;
+      setError(anyErr?.response?.data?.message || 'Tạo thanh toán thất bại');
     } finally {
       setIsLoading(false);
     }
