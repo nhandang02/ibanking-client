@@ -142,8 +142,8 @@ export default function LoginPage() {
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <h3 className="text-sm font-medium text-gray-700 mb-2">Tài khoản demo:</h3>
               <div className="text-xs text-gray-600 space-y-1">
-                <p><strong>Username:</strong> demo@tdtu.edu.vn</p>
-                <p><strong>Password:</strong> password123</p>
+                <p><strong>Username:</strong> nhandang02</p>
+                <p><strong>Password:</strong> 123456</p>
               </div>
             </div>
           </CardContent>
@@ -151,7 +151,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-gray-500">
-          <p>© 2024 TDTU I-Banking System. All rights reserved.</p>
+          <p>© 2025 TDTU I-Banking System. All rights reserved.</p>
         </div>
       </div>
     </div>
