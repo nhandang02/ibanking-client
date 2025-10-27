@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { paymentAPI } from '@/services/api';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { formatCurrency } from '@/lib/utils';
 import { 
@@ -19,7 +19,6 @@ import {
   XCircle,
   Clock,
   ArrowLeft,
-  Info,
   Eye
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -59,7 +58,7 @@ export default function PaymentHistoryPage() {
         let errorMessage = 'Không thể tải lịch sử thanh toán';
         
         if (err && typeof err === 'object') {
-          const errorObj = err as any;
+          const errorObj = err as { response?: { data?: { msg?: string; message?: string } }; message?: string; code?: number };
           
           // Handle axios error structure
           if (errorObj.response?.data?.msg) {

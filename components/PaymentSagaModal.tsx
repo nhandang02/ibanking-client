@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { paymentAPI } from '@/services/api';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { formatCurrency } from '@/lib/utils';
 import { 
@@ -13,7 +13,7 @@ import {
   Clock, 
   Info
 } from 'lucide-react';
-import { PaymentSaga, PaymentSagaStep, PaymentSagaCompletedStep } from '@/types';
+import { PaymentSaga } from '@/types';
 
 interface PaymentSagaModalProps {
   paymentId: string;
@@ -35,13 +35,7 @@ export const PaymentSagaModal: React.FC<PaymentSagaModalProps> = ({
     console.log('Saga state changed:', saga);
   }, [saga]);
 
-  useEffect(() => {
-    if (isOpen && paymentId) {
-      fetchSagaDetails();
-    }
-  }, [isOpen, paymentId]);
-
-  const fetchSagaDetails = async () => {
+  const fetchSagaDetails = useCallback(async () => {
     try {
       setIsLoading(true);
       setError('');
@@ -57,7 +51,7 @@ export const PaymentSagaModal: React.FC<PaymentSagaModalProps> = ({
       let errorMessage = 'Không thể tải chi tiết giao dịch';
       
       if (err && typeof err === 'object') {
-        const errorObj = err as any;
+        const errorObj = err as { response?: { data?: { msg?: string; message?: string } }; message?: string; code?: number };
         
         // Handle axios error structure
         if (errorObj.response?.data?.msg) {
@@ -75,7 +69,13 @@ export const PaymentSagaModal: React.FC<PaymentSagaModalProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [paymentId]);
+
+  useEffect(() => {
+    if (isOpen && paymentId) {
+      fetchSagaDetails();
+    }
+  }, [isOpen, paymentId, fetchSagaDetails]);
 
 
   const formatDate = (dateString: string) => {
