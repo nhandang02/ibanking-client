@@ -12,6 +12,8 @@ import {
   OTPVerifyRequest,
   OTPVerifyResponse,
   OTPInfoResponse,
+  PaymentHistoryResponse,
+  PaymentSagaResponse,
 } from '@/types';
 
 // Authentication APIs
@@ -51,6 +53,12 @@ export const paymentAPI = {
 
   resendOTP: (paymentId: string): Promise<{ success: boolean; data: { message: string } }> =>
     apiClient.post(`/payments/resend-otp/${paymentId}`).then(res => res.data),
+
+  getHistory: (): Promise<PaymentHistoryResponse> =>
+    apiClient.get('/payments/history').then(res => res.data),
+
+  getSaga: (paymentId: string): Promise<PaymentSagaResponse> =>
+    apiClient.get(`/payments/${paymentId}/saga`).then(res => res.data),
 };
 
 // OTP APIs

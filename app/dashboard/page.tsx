@@ -20,7 +20,8 @@ import {
   GraduationCap, 
   CreditCard,
   LogOut,
-  RefreshCw
+  RefreshCw,
+  History
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PaymentState } from '@/types';
@@ -211,7 +212,7 @@ export default function DashboardPage() {
         <header className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => router.push('/dashboard')}>
                 <div className="p-2 bg-blue-600 rounded-lg">
                   <Building2 className="h-6 w-6 text-white" />
                 </div>
@@ -219,6 +220,14 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-gray-600">Xin chào, {user.fullName}</span>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => router.push('/payment-history')}
+                >
+                  <History className="h-4 w-4 mr-2" />
+                  Lịch sử
+                </Button>
                 <Button variant="outline" size="sm" onClick={handleLogout}>
                   <LogOut className="h-4 w-4 mr-2" />
                   Đăng xuất

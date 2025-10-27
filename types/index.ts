@@ -125,3 +125,71 @@ export interface PaymentState {
   error?: string;
   otpInfo?: OTPInfo;
 }
+
+// Payment History types
+export interface PaymentHistory {
+  id: string;
+  payerBalance: string;
+  tuitionAmount: string;
+  paymentTerms: string;
+  payerId: string;
+  studentId: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaymentHistoryResponse {
+  success: boolean;
+  data: {
+    success: boolean;
+    data: PaymentHistory[];
+  };
+}
+
+// Payment Saga types
+export interface PaymentSagaStep {
+  id: string;
+  action: string;
+  compensation: string;
+  status: 'pending' | 'completed' | 'failed';
+  retryCount: number;
+  maxRetries: number;
+  error?: string;
+  completedAt?: string; // API trả về string, không phải Date
+}
+
+export interface PaymentSagaCompletedStep {
+  id: string;
+  action: string;
+  compensation: string;
+  status: 'completed';
+  retryCount: number;
+  maxRetries: number;
+  result?: any;
+  completedAt: string; // API trả về string, không phải Date
+}
+
+export interface PaymentSaga {
+  id: string;
+  paymentId: string;
+  payerId: string;
+  studentId: string;
+  amount: string;
+  userEmail: string;
+  status: 'pending' | 'completed' | 'failed' | 'compensating';
+  currentStepIndex: number;
+  steps: PaymentSagaStep[];
+  completedSteps: PaymentSagaCompletedStep[];
+  errorMessage?: string | null; // API có thể trả về null
+  createdAt: string; // API trả về string, không phải Date
+  updatedAt: string; // API trả về string, không phải Date
+}
+
+export interface PaymentSagaResponse {
+  success: boolean;
+  data: {
+    success: boolean;
+    data: PaymentSaga;
+  };
+}
