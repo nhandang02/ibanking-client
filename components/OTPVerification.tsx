@@ -230,11 +230,12 @@ export default function OTPVerification({
         if (newRetryCount >= 5) {
           // Clear localStorage when max attempts reached
           localStorage.removeItem(`otp_retry_${paymentId}`);
+          localStorage.removeItem(`otp_expire_until_${paymentId}`);
+          localStorage.removeItem(`otp_resend_until_${paymentId}`);
+          localStorage.removeItem('payment_state'); // Clear payment state when max attempts reached
           console.log(`Max attempts reached, cleared localStorage for payment: ${paymentId}`);
-          setError('Đã hết số lần thử. Giao dịch bị hủy tự động.');
-          setTimeout(() => {
-            onError('Đã hết số lần thử. Giao dịch bị hủy tự động.');
-          }, 2000);
+          // Component will automatically render the "out of attempts" card
+          // Don't call onError to avoid duplicate error display
           return;
         }
         
@@ -261,10 +262,8 @@ export default function OTPVerification({
         localStorage.removeItem(`otp_resend_until_${paymentId}`);
         localStorage.removeItem('payment_state'); // Clear payment state when max attempts reached
         console.log(`Max attempts reached, cleared all localStorage for payment: ${paymentId}`);
-        setError('Đã hết số lần thử. Giao dịch bị hủy tự động.');
-        setTimeout(() => {
-          onError('Đã hết số lần thử. Giao dịch bị hủy tự động.');
-        }, 2000);
+        // Component will automatically render the "out of attempts" card
+        // Don't call onError to avoid duplicate error display
         return;
       }
       
@@ -359,6 +358,17 @@ export default function OTPVerification({
     setValue('otp', value);
   };
 
+  const handleCreateNewPayment = () => {
+    // Clear all localStorage related to this payment
+    localStorage.removeItem(`otp_retry_${paymentId}`);
+    localStorage.removeItem(`otp_expire_until_${paymentId}`);
+    localStorage.removeItem(`otp_resend_until_${paymentId}`);
+    localStorage.removeItem('payment_state');
+    console.log(`Cleared all localStorage for payment: ${paymentId}`);
+    // Just close modal and reset form, no need to call API cancel
+    onCancel();
+  };
+
   if (attemptsRemaining <= 0) {
     return (
       <Card>
@@ -371,7 +381,7 @@ export default function OTPVerification({
             <p className="text-gray-600 mb-6">
               Bạn đã nhập sai mã OTP quá nhiều lần. Vui lòng tạo thanh toán mới.
             </p>
-            <Button onClick={handleCancelConfirm} className="w-full" loading={isCancelling}>
+            <Button onClick={handleCreateNewPayment} className="w-full">
               Tạo thanh toán mới
             </Button>
           </div>
