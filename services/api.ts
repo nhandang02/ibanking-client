@@ -59,6 +59,9 @@ export const paymentAPI = {
 
   getSaga: (paymentId: string): Promise<PaymentSagaResponse> =>
     apiClient.get(`/payments/${paymentId}/saga`).then(res => res.data),
+
+  cancel: (paymentId: string): Promise<{ success: boolean; data: { message: string } }> =>
+    apiClient.post(`/payments/${paymentId}/cancel`).then(res => res.data),
 };
 
 // OTP APIs

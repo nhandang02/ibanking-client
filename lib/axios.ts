@@ -37,8 +37,10 @@ apiClient.interceptors.request.use(
   (config) => {
     if (currentAccessToken) {
       config.headers.Authorization = `Bearer ${currentAccessToken}`;
+      console.log('Sending request to:', config.url, 'with Authorization header');
+    } else {
+      console.warn('Sending request to:', config.url, 'without Authorization token!');
     }
-    console.log('Sending request to:', config.url, 'with token:', !!currentAccessToken);
     return config;
   },
   (error) => {

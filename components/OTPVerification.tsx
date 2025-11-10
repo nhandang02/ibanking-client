@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { otpAPI, paymentAPI } from '@/services/api';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -33,6 +34,7 @@ interface OTPVerificationProps {
   onSuccess: () => void;
   onError: (error: string) => void;
   onCancel: () => void;
+  onCancelSuccess?: () => void; // Callback when cancel is successful
 }
 
 export default function OTPVerification({
@@ -41,6 +43,7 @@ export default function OTPVerification({
   onSuccess,
   onError,
   onCancel,
+  onCancelSuccess,
 }: OTPVerificationProps) {
   const RESEND_COOLDOWN_SECONDS = 120;
   const OTP_TOTAL_SECONDS = 300; // 5 minutes
@@ -53,6 +56,8 @@ export default function OTPVerification({
   const [attemptsRemaining, setAttemptsRemaining] = useState<number>(5);
   const [retryCount, setRetryCount] = useState<number>(0);
   const [resendCooldown, setResendCooldown] = useState<number>(RESEND_COOLDOWN_SECONDS);
+  const [showCancelConfirm, setShowCancelConfirm] = useState<boolean>(false);
+  const [isCancelling, setIsCancelling] = useState<boolean>(false);
 
   // Load retry count from localStorage on component mount
   useEffect(() => {
@@ -108,6 +113,9 @@ export default function OTPVerification({
         setTimeRemaining('Đã hết hạn');
         setTimeRemainingSeconds(0);
         localStorage.removeItem(`otp_expire_until_${paymentId}`);
+        localStorage.removeItem(`otp_retry_${paymentId}`);
+        localStorage.removeItem(`otp_resend_until_${paymentId}`);
+        localStorage.removeItem('payment_state'); // Clear payment state when OTP expires
         if (intervalRef.current) clearInterval(intervalRef.current);
         onError('Mã OTP đã hết hạn. Vui lòng tạo thanh toán mới.');
         return;
@@ -247,9 +255,12 @@ export default function OTPVerification({
       
       // Check if exceeded max attempts
       if (newRetryCount >= 5) {
-        // Clear localStorage when max attempts reached
+        // Clear all localStorage related to this payment when max attempts reached
         localStorage.removeItem(`otp_retry_${paymentId}`);
-        console.log(`Max attempts reached, cleared localStorage for payment: ${paymentId}`);
+        localStorage.removeItem(`otp_expire_until_${paymentId}`);
+        localStorage.removeItem(`otp_resend_until_${paymentId}`);
+        localStorage.removeItem('payment_state'); // Clear payment state when max attempts reached
+        console.log(`Max attempts reached, cleared all localStorage for payment: ${paymentId}`);
         setError('Đã hết số lần thử. Giao dịch bị hủy tự động.');
         setTimeout(() => {
           onError('Đã hết số lần thử. Giao dịch bị hủy tự động.');
@@ -266,11 +277,56 @@ export default function OTPVerification({
     }
   };
 
-  const handleCancel = () => {
-    // Clear localStorage when canceling payment
-    localStorage.removeItem(`otp_retry_${paymentId}`);
-    console.log(`Cleared retry count from localStorage on cancel for payment: ${paymentId}`);
-    onCancel();
+  const handleCancelClick = () => {
+    setShowCancelConfirm(true);
+  };
+
+  const handleCancelConfirm = async () => {
+    try {
+      setIsCancelling(true);
+      // Call API to cancel payment
+      // apiClient will automatically add Authorization header via interceptor
+      console.log('Cancelling payment:', paymentId);
+      const response = await paymentAPI.cancel(paymentId);
+      console.log('Payment cancel response:', response);
+      
+      // Check if the cancellation was successful
+      if (response.success) {
+        console.log('Payment cancelled successfully');
+        // Notify parent component to show success toast
+        onCancelSuccess?.();
+      } else {
+        // API returned success: false
+        const errorMessage = response.data?.message || 'Không thể hủy thanh toán';
+        console.error('Payment cancellation failed:', errorMessage);
+        onError(errorMessage);
+      }
+    } catch (err: unknown) {
+      console.error('Failed to cancel payment:', err);
+      const anyErr = err as { response?: { status?: number; data?: { message?: string } } } | undefined;
+      if (anyErr?.response?.status === 401) {
+        console.error('Unauthorized - token may be missing or invalid');
+        onError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+      } else {
+        // Show error message from API or default error
+        const errorMessage = anyErr?.response?.data?.message || 'Không thể hủy thanh toán. Vui lòng thử lại.';
+        onError(errorMessage);
+      }
+    } finally {
+      // Clear all localStorage related to this payment when canceling
+      localStorage.removeItem(`otp_retry_${paymentId}`);
+      localStorage.removeItem(`otp_expire_until_${paymentId}`);
+      localStorage.removeItem(`otp_resend_until_${paymentId}`);
+      localStorage.removeItem('payment_state'); // Clear payment state when canceling
+      console.log(`Cleared all localStorage on cancel for payment: ${paymentId}`);
+      setIsCancelling(false);
+      setShowCancelConfirm(false);
+      onCancel();
+    }
+  };
+
+  const handleCancelCancel = () => {
+    setShowCancelConfirm(false);
   };
 
   const handleResendOTP = async () => {
@@ -315,7 +371,7 @@ export default function OTPVerification({
             <p className="text-gray-600 mb-6">
               Bạn đã nhập sai mã OTP quá nhiều lần. Vui lòng tạo thanh toán mới.
             </p>
-            <Button onClick={handleCancel} className="w-full">
+            <Button onClick={handleCancelConfirm} className="w-full" loading={isCancelling}>
               Tạo thanh toán mới
             </Button>
           </div>
@@ -337,21 +393,67 @@ export default function OTPVerification({
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {/* Payment Summary */}
-          {tuitionInfo && (
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <h3 className="font-medium text-blue-900 mb-2">Thông tin thanh toán</h3>
-              <div className="space-y-1 text-sm">
-                <p><strong>Mã sinh viên:</strong> {tuitionInfo.studentId}</p>
-                <p><strong>Tên sinh viên:</strong> {tuitionInfo.studentName}</p>
-                <p><strong>Số tiền:</strong> 
-                  <span className="text-lg font-bold text-red-600 ml-2">
-                    {formatCurrency(tuitionInfo.amount)}
-                  </span>
-                </p>
+          {/* Cancel Confirmation Dialog */}
+          {showCancelConfirm ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-center mb-4">
+                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                  <XCircle className="h-6 w-6 text-red-600" />
+                </div>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
+                Xác nhận hủy thanh toán
+              </h3>
+              <p className="text-sm text-gray-600 text-center mb-6">
+                Bạn có chắc chắn muốn hủy giao dịch thanh toán này không? 
+                Hành động này không thể hoàn tác.
+              </p>
+              {tuitionInfo && (
+                <div className="p-3 bg-gray-50 rounded-lg mb-6">
+                  <p className="text-sm text-gray-700">
+                    <strong>Mã sinh viên:</strong> {tuitionInfo.studentId}
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    <strong>Số tiền:</strong> {formatCurrency(tuitionInfo.amount)}
+                  </p>
+                </div>
+              )}
+              <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={handleCancelCancel}
+                  className="flex-1"
+                  disabled={isCancelling}
+                >
+                  Không, tiếp tục thanh toán
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleCancelConfirm}
+                  className="flex-1"
+                  loading={isCancelling}
+                >
+                  Có, hủy thanh toán
+                </Button>
               </div>
             </div>
-          )}
+          ) : (
+            <>
+              {/* Payment Summary */}
+              {tuitionInfo && (
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <h3 className="font-medium text-blue-900 mb-2">Thông tin thanh toán</h3>
+                  <div className="space-y-1 text-sm">
+                    <p><strong>Mã sinh viên:</strong> {tuitionInfo.studentId}</p>
+                    <p><strong>Tên sinh viên:</strong> {tuitionInfo.studentName}</p>
+                    <p><strong>Số tiền:</strong> 
+                      <span className="text-lg font-bold text-red-600 ml-2">
+                        {formatCurrency(tuitionInfo.amount)}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              )}
 
           {/* OTP Info */}
           <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
@@ -373,7 +475,7 @@ export default function OTPVerification({
                 : 'bg-orange-100 border-orange-200'
             }`}>
               <div className="flex items-start">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <svg className={`h-5 w-5 ${
                     timeRemainingSeconds <= 30 ? 'text-red-400' : 'text-orange-400'
                   }`} viewBox="0 0 20 20" fill="currentColor">
@@ -484,11 +586,12 @@ export default function OTPVerification({
               <Button
                 type="button"
                 variant="outline"
-                onClick={handleCancel}
+                onClick={handleCancelClick}
                 className="flex-1"
+                disabled={isCancelling}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Hủy
+                Hủy thanh toán
               </Button>
               
               <Button
@@ -521,20 +624,22 @@ export default function OTPVerification({
             </Button>
           </div>
 
-          {/* Security Notice */}
-          <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-            <div className="flex items-start">
-              <Shield className="h-4 w-4 text-yellow-600 mt-0.5 mr-2 flex-shrink-0" />
-              <div className="text-xs text-yellow-800">
-                <p className="font-medium mb-1">Lưu ý bảo mật:</p>
-                <ul className="space-y-1">
-                  <li>• Mã OTP có thời hạn 2 phút</li>
-                  <li>• Không chia sẻ mã OTP với bất kỳ ai</li>
-                  <li>• Hệ thống sẽ tự động hủy thanh toán sau 2 phút không hoạt động</li>
-                </ul>
+              {/* Security Notice */}
+              <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                <div className="flex items-start">
+                  <Shield className="h-4 w-4 text-yellow-600 mt-0.5 mr-2 shrink-0" />
+                  <div className="text-xs text-yellow-800">
+                    <p className="font-medium mb-1">Lưu ý bảo mật:</p>
+                    <ul className="space-y-1">
+                      <li>• Mã OTP có thời hạn 2 phút</li>
+                      <li>• Không chia sẻ mã OTP với bất kỳ ai</li>
+                      <li>• Hệ thống sẽ tự động hủy thanh toán sau 5 phút không hoạt động</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </CardContent>
     </Card>

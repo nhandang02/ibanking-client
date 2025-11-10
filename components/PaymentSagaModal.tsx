@@ -166,10 +166,6 @@ export const PaymentSagaModal: React.FC<PaymentSagaModalProps> = ({
                         </span>
                       </span>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Bước hiện tại:</p>
-                      <p className="font-medium">{saga.currentStepIndex + 1}/{(saga.steps?.length || 0) + (saga.completedSteps?.length || 0)}</p>
-                    </div>
                   </div>
                   
                   {saga.errorMessage && (

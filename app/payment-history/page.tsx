@@ -89,6 +89,9 @@ export default function PaymentHistoryPage() {
   };
 
   const handleBackToDashboard = () => {
+    // Set navigation flag before navigating back to dashboard
+    // This allows dashboard to restore payment state (including OTP step)
+    sessionStorage.setItem('dashboard_navigation', 'true');
     router.push('/dashboard');
   };
 
