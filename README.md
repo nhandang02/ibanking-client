@@ -25,6 +25,7 @@ University tuition payment portal built with Next.js, TypeScript, Tailwind CSS, 
 - Node.js 18+
 - npm or yarn
 - Backend API available at `http://localhost:4000`
+- Backend reference: https://github.com/nhandang02/ibanking-subsystem-microservice
 
 ## 🚀 Setup & Run
 
