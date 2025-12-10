@@ -1,172 +1,169 @@
-# 🏦 TDTU I-Banking System - Frontend
+# 🏦 Campus I-Banking Portal - Frontend
 
-Hệ thống thanh toán học phí TDTU được xây dựng với Next.js, TypeScript, Tailwind CSS, React Hook Form và Axios.
+University tuition payment portal built with Next.js, TypeScript, Tailwind CSS, React Hook Form, and Axios.
 
-## 🚀 Tính năng
+## 🚀 Features
 
-- **Đăng nhập/Đăng xuất**: Xác thực người dùng với JWT token
-- **Thanh toán học phí**: Giao diện thanh toán với validation đầy đủ
-- **Xác thực OTP**: Xác thực 2FA qua email
-- **Quản lý tài khoản**: Hiển thị thông tin và số dư tài khoản
-- **Responsive Design**: Giao diện thân thiện trên mọi thiết bị
-- **Error Handling**: Xử lý lỗi toàn diện với thông báo rõ ràng
+- **Auth**: Login/Logout with JWT-based authentication
+- **Tuition Payments**: Guided payment flow with full validation
+- **OTP Verification**: Email-based two-factor verification
+- **Account Overview**: Balance and account details
+- **Responsive UI**: Optimized for desktop, tablet, and mobile
+- **Error Handling**: Clear, actionable error messaging
 
-## 🛠️ Công nghệ sử dụng
+## 🛠️ Tech Stack
 
-- **Next.js 15**: React framework với App Router
-- **TypeScript**: Type safety và better developer experience
-- **Tailwind CSS**: Utility-first CSS framework
-- **React Hook Form**: Form management với validation
-- **Zod**: Schema validation
-- **Axios**: HTTP client với interceptors
-- **Lucide React**: Icon library
+- **Next.js 15** with App Router
+- **TypeScript** for static typing
+- **Tailwind CSS** utility-first styling
+- **React Hook Form** with **Zod** validation
+- **Axios** with interceptors
+- **Lucide React** icon set
 
-## 📋 Yêu cầu hệ thống
+## 📋 Prerequisites
 
-- Node.js 18+ 
-- npm hoặc yarn
-- Backend API server chạy trên `http://localhost:4000`
+- Node.js 18+
+- npm or yarn
+- Backend API available at `http://localhost:4000`
 
-## 🚀 Cài đặt và chạy
+## 🚀 Setup & Run
 
-1. **Clone repository và cài đặt dependencies:**
+1) **Install dependencies**
 ```bash
 npm install
-# hoặc
+# or
 yarn install
 ```
 
-2. **Tạo file environment:**
+2) **Create environment file**
 ```bash
-# Tạo file .env.local
 echo "NEXT_PUBLIC_API_URL=http://localhost:4000" > .env.local
 ```
 
-3. **Chạy development server:**
+3) **Start the dev server**
 ```bash
 npm run dev
-# hoặc
+# or
 yarn dev
 ```
 
-4. **Mở trình duyệt:**
+4) **Open the app**
 ```
 http://localhost:3000
 ```
 
-## 📱 Hướng dẫn sử dụng
+## 📱 Usage Guide
 
-### 1. Đăng nhập
-- Truy cập `http://localhost:3000`
-- Hệ thống sẽ tự động chuyển hướng đến trang đăng nhập
-- Sử dụng tài khoản demo:
-  - **Username**: `demo@tdtu.edu.vn`
+### 1) Sign in
+- Visit `http://localhost:3000` (auto-redirects to login)
+- Demo account:
+  - **Username**: `demo@example.edu`
   - **Password**: `password123`
 
-### 2. Thanh toán học phí
-- Sau khi đăng nhập, bạn sẽ thấy dashboard
-- Nhập mã sinh viên (VD: `522H0006`)
-- Hệ thống sẽ tự động tìm thông tin học phí
-- Kiểm tra số dư và thông tin thanh toán
-- Nhấn "Xác nhận thanh toán"
+### 2) Pay tuition
+- After login, open the dashboard
+- Enter a student ID (e.g., `STU0001`)
+- The app fetches tuition details automatically
+- Review balance and payment info
+- Click **Confirm payment**
 
-### 3. Xác thực OTP
-- Sau khi tạo thanh toán, hệ thống sẽ gửi OTP qua email
-- Nhập mã OTP 6 chữ số
-- Nhấn "Xác thực" để hoàn tất thanh toán
+### 3) Verify OTP
+- After creating a payment, an OTP is emailed
+- Enter the 6-digit code
+- Click **Verify** to finish
 
-## 🏗️ Cấu trúc dự án
+## 🏗️ Project Structure
 
 ```
 ├── app/                    # Next.js App Router
-│   ├── dashboard/         # Trang dashboard chính
-│   ├── login/            # Trang đăng nhập
-│   ├── layout.tsx        # Root layout
-│   └── page.tsx          # Home page (redirect)
-├── components/           # React components
-│   ├── ui/              # UI components (Button, Input, Card, etc.)
+│   ├── dashboard/          # Dashboard page
+│   ├── login/              # Login page
+│   ├── layout.tsx          # Root layout
+│   └── page.tsx            # Home page (redirect)
+├── components/             # React components
+│   ├── ui/                 # UI components (Button, Input, Card, etc.)
 │   ├── OTPVerification.tsx
 │   └── ProtectedRoute.tsx
-├── contexts/            # React contexts
-│   └── AuthContext.tsx  # Authentication context
-├── lib/                 # Utility libraries
-│   ├── axios.ts         # Axios configuration
-│   └── utils.ts         # Helper functions
-├── services/            # API services
-│   └── api.ts           # API endpoints
-└── types/               # TypeScript type definitions
+├── contexts/               # React contexts
+│   └── AuthContext.tsx     # Authentication context
+├── lib/                    # Utility libraries
+│   ├── axios.ts            # Axios configuration
+│   └── utils.ts            # Helper functions
+├── services/               # API services
+│   └── api.ts              # API endpoints
+└── types/                  # TypeScript type definitions
     └── index.ts
 ```
 
-## 🔧 Cấu hình
+## 🔧 Configuration
 
 ### API Configuration
-File `lib/axios.ts` chứa cấu hình Axios:
+`lib/axios.ts` defines the Axios setup:
 - Base URL: `http://localhost:4000`
-- Auto token refresh
-- Request/Response interceptors
-- Error handling
+- Automatic token refresh
+- Request/response interceptors
+- Centralized error handling
 
 ### Environment Variables
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:4000  # Backend API URL
 ```
 
-## 🎨 UI/UX Features
+## 🎨 UI/UX Highlights
 
-- **Modern Design**: Clean và professional interface
-- **Responsive**: Hoạt động tốt trên desktop, tablet, mobile
-- **Loading States**: Loading indicators cho tất cả actions
-- **Error Handling**: Clear error messages và recovery options
-- **Form Validation**: Real-time validation với helpful messages
-- **Accessibility**: Keyboard navigation và screen reader support
+- **Modern design**: Clean, professional interface
+- **Responsive**: Works across desktop, tablet, and mobile
+- **Loading states**: Indicators for all key actions
+- **Error handling**: Clear messages with recovery cues
+- **Form validation**: Real-time checks with helpful feedback
+- **Accessibility**: Keyboard navigation and screen reader support
 
 ## 🔒 Security Features
 
-- **JWT Authentication**: Secure token-based authentication
-- **Auto Token Refresh**: Seamless token renewal
-- **Protected Routes**: Route protection với middleware
-- **Input Validation**: Client-side và server-side validation
-- **OTP Verification**: Two-factor authentication
+- **JWT authentication** for secure sessions
+- **Automatic token refresh**
+- **Protected routes** via middleware
+- **Input validation** on client and server
+- **OTP verification** for 2FA
 
-## 🚨 Business Rules Implementation
+## 🚨 Business Rules
 
 ### Payment Rules
-- ✅ **Concurrent Payment Prevention**: Chỉ 1 thanh toán cho mỗi studentId
-- ✅ **Full Payment Only**: Phải thanh toán đủ số tiền học phí
-- ✅ **Balance Check**: Kiểm tra số dư trước khi thanh toán
-- ✅ **OTP Expiry**: OTP có thời hạn 2 phút
-- ✅ **Auto Timeout**: Thanh toán tự động hủy sau 2 phút
+- ✅ **Concurrent payment prevention**: Only one payment per studentId
+- ✅ **Full payment only**: Must pay the full tuition amount
+- ✅ **Balance check**: Ensure sufficient balance before paying
+- ✅ **OTP expiry**: OTP expires after 2 minutes
+- ✅ **Auto timeout**: Payment auto-cancels after 2 minutes
 
 ### UI/UX Rules
-- ✅ **Auto-fill Payer Info**: Thông tin người thanh toán tự động điền
-- ✅ **Real-time Tuition Lookup**: Tìm thông tin học phí theo studentId
-- ✅ **Transaction Confirmation**: Button chỉ enable khi đủ điều kiện
-- ✅ **OTP Verification**: Xác thực OTP trước khi hoàn tất
+- ✅ **Auto-fill payer info**
+- ✅ **Real-time tuition lookup** by studentId
+- ✅ **Transaction confirmation** only when criteria are met
+- ✅ **OTP verification** required before completion
 
 ## 🐛 Troubleshooting
 
 ### Common Issues
 
-1. **API Connection Error**
-   - Kiểm tra backend server có chạy trên port 4000
-   - Kiểm tra CORS configuration
+1. **API connection error**
+   - Confirm the backend is running on port 4000
+   - Verify CORS configuration
 
-2. **Authentication Issues**
-   - Clear browser cookies và localStorage
-   - Kiểm tra token expiry
+2. **Authentication issues**
+   - Clear browser cookies and localStorage
+   - Check token expiry
 
-3. **OTP Not Received**
-   - Kiểm tra email spam folder
-   - Sử dụng chức năng "Gửi lại mã OTP"
+3. **OTP not received**
+   - Check the email spam folder
+   - Use **Resend OTP**
 
 ## 📞 Support
 
-Nếu gặp vấn đề, vui lòng:
-1. Kiểm tra console logs trong browser
-2. Kiểm tra network requests trong DevTools
-3. Đảm bảo backend API đang chạy và accessible
+If you encounter issues:
+1. Review browser console logs
+2. Check network requests in DevTools
+3. Ensure the backend API is running and reachable
 
 ## 📄 License
 
-Dự án này được phát triển cho mục đích học tập tại TDTU.
+This project is developed for academic purposes at the university level.
